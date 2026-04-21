@@ -1,0 +1,30 @@
+{
+  "permissions": {
+    "allow": [
+      "WebSearch",
+      "Skill(kiro:steering)",
+      "Bash(docker-compose ps *)",
+      "Bash(docker-compose logs *)",
+      "Bash(docker-compose up *)",
+      "Bash(docker pull *)",
+      "Bash(npm install *)",
+      "Bash(npm cache *)",
+      "Bash(npm config *)",
+      "Read(//Users/johnwick/**)",
+      "Read(//private/tmp/**)",
+      "Bash(npm --version)",
+      "Bash(npx prisma *)",
+      "Bash(npm run *)",
+      "Bash(curl -s http://localhost:3001/api/v1/policies)",
+      "Bash(pkill -f \"nest start\")",
+      "Bash(pkill -f \"next dev\")",
+      "Bash(curl -s http://localhost:3000)",
+      "Bash(grep ^export *)",
+      "Bash(git init *)",
+      "Bash(git add *)",
+      "Bash(git reset *)",
+      "Bash(git rm *)",
+      "Bash(git commit *)"
+    ]
+  }
+}

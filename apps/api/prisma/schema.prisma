@@ -1,0 +1,545 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ==================== 用户系统 ====================
+
+model User {
+  id        String   @id @default(uuid())
+  phone     String?  @unique
+  email     String?  @unique
+  password  String?
+  wechatOpenId String? @unique @map("wechat_open_id")
+
+  // 基本信息
+  nickname  String?
+  avatar    String?
+  bio       String?  @db.Text
+
+  // 创业信息
+  location  String?
+  industry  String?
+  companyStatus String? @map("company_status") // none, preparing, registered
+  companyName String? @map("company_name")
+
+  // 等级系统
+  level     Int      @default(1)
+  exp       Int      @default(0)
+
+  // 认证状态
+  phoneVerified Boolean @default(false) @map("phone_verified")
+  realNameVerified Boolean @default(false) @map("real_name_verified")
+  companyVerified Boolean @default(false) @map("company_verified")
+
+  // 角色
+  role      UserRole @default(USER)
+
+  // 统计
+  postCount Int @default(0) @map("post_count")
+  serviceCount Int @default(0) @map("service_count")
+  transactionCount Int @default(0) @map("transaction_count")
+
+  // 状态
+  status    UserStatus @default(ACTIVE)
+
+  // 关联
+  services  Service[]
+  demands   Demand[]
+  transactionsAsBuyer Transaction[] @relation("BuyerTransactions")
+  transactionsAsSeller Transaction[] @relation("SellerTransactions")
+  posts     Post[]
+  comments  Comment[]
+  apiKeys   ApiKey[]
+  favorites UserFavorite[]
+  wishes    Wish[]
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("users")
+}
+
+enum UserRole {
+  USER
+  PROVIDER
+  MENTOR
+  ADMIN
+  SUPER_ADMIN
+}
+
+enum UserStatus {
+  ACTIVE
+  SUSPENDED
+  DELETED
+}
+
+// ==================== API Key (AI Gateway) ====================
+
+model ApiKey {
+  id        String   @id @default(uuid())
+  userId    String   @map("user_id")
+  name      String
+  keyHash   String   @map("key_hash")
+  keyPrefix String   @map("key_prefix")
+  type      ApiKeyType @default(LIVE)
+
+  // 限制
+  rateLimit Int @default(100) @map("rate_limit")
+  dailyQuota Int @default(10000) @map("daily_quota")
+
+  // 统计
+  callCount Int @default(0) @map("call_count")
+  lastUsedAt DateTime? @map("last_used_at")
+
+  status    ApiKeyStatus @default(ACTIVE)
+  expiresAt DateTime? @map("expires_at")
+
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@map("api_keys")
+}
+
+enum ApiKeyType {
+  LIVE
+  TEST
+}
+
+enum ApiKeyStatus {
+  ACTIVE
+  REVOKED
+}
+
+// ==================== 政策系统 ====================
+
+model Policy {
+  id          String   @id @default(uuid())
+  title       String
+  summary     String?  @db.Text
+  content     String   @db.Text
+  category    PolicyCategory
+  tags        String[]
+
+  // 结构化字段
+  targetAudience String? @map("target_audience") @db.Text
+  eligibility String? @db.Text
+  amount      Json?    // { type, min, max, currency, description }
+  materials   String[] @default([])
+  process     Json?    // ProcessStep[]
+
+  // 来源
+  source      String
+  officialUrl String?  @map("official_url")
+  documentUrl String?  @map("document_url")
+
+  // 时间
+  validFrom   DateTime @map("valid_from")
+  validTo     DateTime? @map("valid_to")
+  publishDate DateTime @map("publish_date")
+
+  // 统计
+  viewCount   Int @default(0) @map("view_count")
+  favoriteCount Int @default(0) @map("favorite_count")
+
+  status      PolicyStatus @default(DRAFT)
+
+  // 关联
+  favorites   UserFavorite[]
+
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+  createdBy   String?  @map("created_by")
+
+  @@map("policies")
+}
+
+enum PolicyCategory {
+  TAX
+  SPACE
+  COMPUTING
+  FUND
+  TALENT
+  OTHER
+}
+
+enum PolicyStatus {
+  DRAFT
+  PENDING
+  PUBLISHED
+  EXPIRED
+}
+
+model UserFavorite {
+  id        String   @id @default(uuid())
+  userId    String   @map("user_id")
+  policyId  String   @map("policy_id")
+
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  policy    Policy   @relation(fields: [policyId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@unique([userId, policyId])
+  @@map("user_favorites")
+}
+
+// ==================== 技能市场 ====================
+
+model Service {
+  id          String   @id @default(uuid())
+  providerId  String   @map("provider_id")
+  title       String
+  category    ServiceCategory
+  description String   @db.Text
+  price       Json     // { type, min, max, fixed, currency }
+  tags        String[]
+  deliveryTime String  @map("delivery_time")
+  portfolio   String[] @default([])
+
+  // 统计
+  viewCount   Int @default(0) @map("view_count")
+  orderCount  Int @default(0) @map("order_count")
+  rating      Float @default(0)
+  reviewCount Int @default(0) @map("review_count")
+
+  status      ServiceStatus @default(DRAFT)
+
+  provider    User     @relation(fields: [providerId], references: [id], onDelete: Cascade)
+  transactions Transaction[]
+
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@map("services")
+}
+
+enum ServiceCategory {
+  AI_DEVELOPMENT
+  DESIGN
+  COPYWRITING
+  CONSULTING
+  MARKETING
+  TRANSLATION
+  OTHER
+}
+
+enum ServiceStatus {
+  DRAFT
+  PUBLISHED
+  SUSPENDED
+}
+
+model Demand {
+  id          String   @id @default(uuid())
+  requesterId String   @map("requester_id")
+  title       String
+  description String   @db.Text
+  category    ServiceCategory
+  budget      Json     // { type, min, max, fixed }
+  deadline    DateTime?
+  attachments String[] @default([])
+
+  status      DemandStatus @default(OPEN)
+
+  requester   User     @relation(fields: [requesterId], references: [id], onDelete: Cascade)
+
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@map("demands")
+}
+
+enum DemandStatus {
+  OPEN
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+}
+
+model Transaction {
+  id        String   @id @default(uuid())
+  orderNo   String   @unique @map("order_no")
+
+  buyerId   String   @map("buyer_id")
+  sellerId  String   @map("seller_id")
+
+  type      TransactionType
+  serviceId String?  @map("service_id")
+  demandId  String?  @map("demand_id")
+
+  title     String
+  price     Float
+  currency  String   @default("CNY")
+
+  status    TransactionStatus @default(PENDING)
+
+  deliverables String[] @default([])
+  deliveryNote String? @map("delivery_note") @db.Text
+
+  buyerReview Json? @map("buyer_review") // { rating, content, createdAt }
+  sellerReview Json? @map("seller_review")
+
+  buyer     User     @relation("BuyerTransactions", fields: [buyerId], references: [id])
+  seller    User     @relation("SellerTransactions", fields: [sellerId], references: [id])
+  service   Service? @relation(fields: [serviceId], references: [id])
+  messages  TransactionMessage[]
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  completedAt DateTime? @map("completed_at")
+
+  @@map("transactions")
+}
+
+enum TransactionType {
+  SERVICE
+  DEMAND
+}
+
+enum TransactionStatus {
+  PENDING
+  CONFIRMED
+  IN_PROGRESS
+  DELIVERED
+  COMPLETED
+  CANCELLED
+  DISPUTED
+}
+
+model TransactionMessage {
+  id            String   @id @default(uuid())
+  transactionId String   @map("transaction_id")
+  senderId      String   @map("sender_id")
+  content       String   @db.Text
+  attachments   String[] @default([])
+
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  transaction   Transaction @relation(fields: [transactionId], references: [id], onDelete: Cascade)
+
+  @@map("transaction_messages")
+}
+
+// ==================== 社区系统 ====================
+
+model Post {
+  id        String   @id @default(uuid())
+  authorId  String   @map("author_id")
+  title     String
+  content   String   @db.Text
+  board     Board
+  tags      String[]
+
+  viewCount Int @default(0) @map("view_count")
+  commentCount Int @default(0) @map("comment_count")
+  likeCount Int @default(0) @map("like_count")
+
+  isPinned  Boolean @default(false) @map("is_pinned")
+  isEssence Boolean @default(false) @map("is_essence")
+  status    PostStatus @default(PENDING)
+
+  author    User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  comments  Comment[]
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("posts")
+}
+
+enum Board {
+  POLICY
+  TOOLS
+  EXPERIENCE
+  SHOWCASE
+  HELP
+  RESOURCES
+}
+
+enum PostStatus {
+  DRAFT
+  PENDING
+  PUBLISHED
+  REJECTED
+}
+
+model Comment {
+  id        String   @id @default(uuid())
+  postId    String   @map("post_id")
+  authorId  String   @map("author_id")
+  content   String   @db.Text
+  parentId  String?  @map("parent_id")
+
+  likeCount Int @default(0) @map("like_count")
+
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  author    User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("comments")
+}
+
+// ==================== 培训系统 ====================
+
+model Course {
+  id          String   @id @default(uuid())
+  title       String
+  description String   @db.Text
+  category    CourseCategory
+  tags        String[]
+  coverImage  String?  @map("cover_image")
+
+  // 讲师
+  instructorId String @map("instructor_id")
+  instructorName String @map("instructor_name")
+  instructorAvatar String? @map("instructor_avatar")
+
+  // 课程信息
+  duration    String?
+  price       Float?
+
+  // 统计
+  studentCount Int @default(0) @map("student_count")
+  rating      Float @default(0)
+  reviewCount Int @default(0) @map("review_count")
+
+  status      CourseStatus @default(DRAFT)
+
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@map("courses")
+}
+
+enum CourseCategory {
+  AI_TOOLS
+  BUSINESS_MODEL
+  PERSONAL_BRAND
+  LEGAL_FINANCE
+  MARKETING
+  OTHER
+}
+
+enum CourseStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+model Mentor {
+  id          String   @id @default(uuid())
+  userId      String   @unique @map("user_id")
+  name        String
+  avatar      String?
+  title       String
+  bio         String   @db.Text
+  expertise   String[]
+
+  // 服务信息
+  services    Json[]   // [{ title, price, description }]
+
+  // 统计
+  consultCount Int @default(0) @map("consult_count")
+  rating      Float @default(0)
+  reviewCount Int @default(0) @map("review_count")
+
+  status      MentorStatus @default(PENDING)
+
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@map("mentors")
+}
+
+enum MentorStatus {
+  PENDING
+  APPROVED
+  SUSPENDED
+}
+
+// ==================== API调用日志 ====================
+
+model ApiLog {
+  id            String   @id @default(uuid())
+  keyId         String?  @map("key_id")
+  userId        String   @map("user_id")
+
+  timestamp     DateTime @default(now())
+  method        String
+  endpoint      String
+  path          String
+  query         Json?
+  body          Json?
+
+  statusCode    Int @map("status_code")
+  responseSize  Int @map("response_size")
+  latency       Int      // milliseconds
+
+  ip            String
+  userAgent     String?  @map("user_agent")
+  error         String?
+
+  @@index([userId])
+  @@index([timestamp])
+  @@map("api_logs")
+}
+
+// ==================== 心愿系统 ====================
+
+model Wish {
+  id              String   @id @default(uuid())
+  userId          String   @map("user_id")
+  title           String
+  category        String   // research, content, analysis, automation, other
+  source          String   @default("manual") // manual, conversation
+  sourceSessionId String?  @map("source_session_id")
+  originalContext Json?    @map("original_context")
+  extractedIntent Json?    @map("extracted_intent")
+  confidence      Float    @default(1.0)
+  priority        String   @default("medium") // low, medium, high
+  status          String   @default("needs_confirm")
+  // needs_confirm → confirmed → queued → executing → done / failed
+  executionConfig Json?    @map("execution_config")
+  result          Json?
+  resultSummary   String?  @map("result_summary") @db.Text
+
+  confirmedAt DateTime? @map("confirmed_at")
+  executedAt  DateTime? @map("executed_at")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+
+  user       User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  executions WishExecution[]
+
+  @@index([userId])
+  @@index([status])
+  @@map("wishes")
+}
+
+model WishExecution {
+  id         String   @id @default(uuid())
+  wishId     String   @map("wish_id")
+  status     String   @default("running") // running, completed, failed
+  output     Json?
+  durationMs Int?     @map("duration_ms")
+  error      String?
+
+  startedAt   DateTime @default(now()) @map("started_at")
+  completedAt DateTime? @map("completed_at")
+
+  wish Wish @relation(fields: [wishId], references: [id], onDelete: Cascade)
+
+  @@index([wishId])
+  @@map("wish_executions")
+}
