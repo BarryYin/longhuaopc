@@ -29,6 +29,14 @@ export class CommunityController {
     return this.communityService.createPost(req.user.userId, dto);
   }
 
+  @Get('posts/my')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: '我的帖子列表' })
+  async findMyPosts(@Request() req) {
+    return { data: await this.communityService.findMyPosts(req.user.userId) };
+  }
+
   @Post('posts/:id/like')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()

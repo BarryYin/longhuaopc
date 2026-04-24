@@ -67,6 +67,13 @@ export class CommunityService {
     });
   }
 
+  async findMyPosts(authorId: string) {
+    return this.prisma.post.findMany({
+      where: { authorId },
+      orderBy: { createdAt: 'desc' },
+    });
+  }
+
   async createComment(postId: string, authorId: string, dto: CreateCommentDto) {
     const comment = await this.prisma.comment.create({
       data: {

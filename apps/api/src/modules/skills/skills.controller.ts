@@ -29,6 +29,14 @@ export class SkillsController {
     return this.skillsService.createService(req.user.userId, dto);
   }
 
+  @Get('services/my')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: '我的服务列表' })
+  async findMyServices(@Request() req) {
+    return { data: await this.skillsService.findMyServices(req.user.userId) };
+  }
+
   @Get('demands')
   @ApiOperation({ summary: '获取需求列表' })
   async findDemands(@Query() query: QueryDemandsDto) {
@@ -47,5 +55,13 @@ export class SkillsController {
   @ApiOperation({ summary: '发布需求' })
   async createDemand(@Request() req, @Body() dto: CreateDemandDto) {
     return this.skillsService.createDemand(req.user.userId, dto);
+  }
+
+  @Get('demands/my')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: '我的需求列表' })
+  async findMyDemands(@Request() req) {
+    return { data: await this.skillsService.findMyDemands(req.user.userId) };
   }
 }

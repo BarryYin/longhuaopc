@@ -51,6 +51,13 @@ export class SkillsService {
     });
   }
 
+  async findMyServices(userId: string) {
+    return this.prisma.service.findMany({
+      where: { providerId: userId },
+      orderBy: { createdAt: 'desc' },
+    });
+  }
+
   // 需求相关
   async findDemands(query: QueryDemandsDto) {
     const where: any = { status: DemandStatus.OPEN };
@@ -86,6 +93,13 @@ export class SkillsService {
         requesterId,
         status: DemandStatus.OPEN,
       },
+    });
+  }
+
+  async findMyDemands(userId: string) {
+    return this.prisma.demand.findMany({
+      where: { requesterId: userId },
+      orderBy: { createdAt: 'desc' },
     });
   }
 }
