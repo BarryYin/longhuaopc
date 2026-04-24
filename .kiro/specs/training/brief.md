@@ -62,6 +62,14 @@ OPC创业者需要学习AI时代新技能，但市面上的课程要么太贵、
 - **Extends**: user-system
 - **Adjacent**: skill-market（课程学成后去接单）
 
+## External Data Strategy
+
+依赖 **data-ingestion** spec 提供课程种子数据：
+- 从国内公开自媒体（知乎专栏、B站教程、掘金小册）抓取免费课程信息
+- Course 只保留元数据（标题、简介、链接），实际内容通过外链跳转
+- **讲师 User 独立创建**：每条课程导入时，基于讲师名生成稳定 User ID，同一讲师多门课共享同一账户
+- Mentor 记录通过 `externalHash` 幂等关联到讲师 User，避免重复
+
 ## Constraints
 
 - 课程质量需要把控
