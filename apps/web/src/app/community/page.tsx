@@ -104,50 +104,50 @@ export default function CommunityPage() {
                 ) : (
                   <div className="space-y-4">
                     {posts.map((post: any) => (
-                      <Card key={post.id} className="hover:shadow-md transition-shadow">
-                        <CardContent className="p-6">
-                          <div className="flex items-start gap-4">
-                            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary-100 text-sm font-bold text-primary-600">
-                              {post.author?.nickname?.[0] || '?'}
-                            </div>
-                            <div className="flex-1">
-                              <div className="flex items-center gap-2">
-                                <span className="font-medium text-gray-900">
-                                  {post.author?.nickname}
-                                </span>
-                                <Badge variant="secondary">Lv.{post.author?.level}</Badge>
-                                <span className="text-sm text-gray-500">
-                                  {new Date(post.createdAt).toLocaleDateString()}
-                                </span>
+                      <Link key={post.id} href={`/community/posts/${post.id}`}>
+                        <Card className="hover:shadow-md transition-shadow cursor-pointer">
+                          <CardContent className="p-6">
+                            <div className="flex items-start gap-4">
+                              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary-100 text-sm font-bold text-primary-600">
+                                {post.author?.nickname?.[0] || '?'}
                               </div>
+                              <div className="flex-1">
+                                <div className="flex items-center gap-2">
+                                  <span className="font-medium text-gray-900">
+                                    {post.author?.nickname}
+                                  </span>
+                                  <Badge variant="secondary">Lv.{post.author?.level}</Badge>
+                                  <span className="text-sm text-gray-500">
+                                    {new Date(post.createdAt).toLocaleDateString()}
+                                  </span>
+                                </div>
 
-                              <Link href={`/community/posts/${post.id}`}>
                                 <h3 className="mt-2 text-lg font-semibold text-gray-900 hover:text-primary-600">
                                   {post.title}
                                 </h3>
-                              </Link>
-                              <p className="mt-1 text-gray-600 line-clamp-2">
-                                {post.content}
-                              </p>
+                                <p className="mt-1 text-gray-600 line-clamp-2">
+                                  {post.content}
+                                </p>
 
-                              <div className="mt-3 flex items-center gap-4">
-                                <span className="flex items-center gap-1 text-sm text-gray-500">
-                                  <Eye className="h-4 w-4" />
-                                  {post.viewCount}
-                                </span>
-                                <span className="flex items-center gap-1 text-sm text-gray-500">
-                                  <MessageSquare className="h-4 w-4" />
-                                  {post.commentCount}
-                                </span>
-                                <span className="flex items-center gap-1 text-sm text-gray-500">
-                                  <ThumbsUp className="h-4 w-4" />
-                                  {post.likeCount}
-                                </span>
+                                <div className="mt-3 flex items-center gap-4">
+                                  <span className="flex items-center gap-1 text-sm text-gray-500">
+                                    <Eye className="h-4 w-4" />
+                                    {post.viewCount}
+                                  </span>
+                                  <span className="flex items-center gap-1 text-sm text-gray-500">
+                                    <MessageSquare className="h-4 w-4" />
+                                    {post.commentCount}
+                                  </span>
+                                  <span className="flex items-center gap-1 text-sm text-gray-500">
+                                    <ThumbsUp className="h-4 w-4" />
+                                    {post.likeCount}
+                                  </span>
+                                </div>
                               </div>
                             </div>
-                          </div>
-                        </CardContent>
-                      </Card>
+                          </CardContent>
+                        </Card>
+                      </Link>
                     ))}
                   </div>
                 )}

@@ -106,52 +106,52 @@ export default function MarketPage() {
             ) : (
               <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
                 {services.map((service: any) => (
-                  <Card key={service.id} className="hover:shadow-md transition-shadow">
-                    <CardContent className="p-6">
-                      <div className="flex items-center gap-3">
-                        <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary-100 text-lg font-bold text-primary-600">
-                          {service.provider?.nickname?.[0] || '?'}
-                        </div>
-                        <div>
-                          <h3 className="font-semibold text-gray-900">
-                            {service.provider?.nickname}
-                          </h3>
-                          <div className="flex items-center gap-1 text-sm text-gray-500">
-                            <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />
-                            <span>{service.rating || '暂无评分'}</span>
-                            <span>({service.reviewCount} 评价)</span>
+                  <Link key={service.id} href={`/market/services/${service.id}`}>
+                    <Card className="hover:shadow-md transition-shadow cursor-pointer">
+                      <CardContent className="p-6">
+                        <div className="flex items-center gap-3">
+                          <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary-100 text-lg font-bold text-primary-600">
+                            {service.provider?.nickname?.[0] || '?'}
+                          </div>
+                          <div>
+                            <h3 className="font-semibold text-gray-900">
+                              {service.provider?.nickname}
+                            </h3>
+                            <div className="flex items-center gap-1 text-sm text-gray-500">
+                              <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />
+                              <span>{service.rating || '暂无评分'}</span>
+                              <span>({service.reviewCount} 评价)</span>
+                            </div>
                           </div>
                         </div>
-                      </div>
 
-                      <h4 className="mt-4 font-semibold text-gray-900">
-                        {service.title}
-                      </h4>
-                      <p className="mt-1 text-sm text-gray-600 line-clamp-2">
-                        {service.description}
-                      </p>
+                        <h4 className="mt-4 font-semibold text-gray-900">
+                          {service.title}
+                        </h4>
+                        <p className="mt-1 text-sm text-gray-600 line-clamp-2">
+                          {service.description}
+                        </p>
 
-                      <div className="mt-4 flex flex-wrap gap-1">
-                        {service.tags?.slice(0, 3).map((tag: string) => (
-                          <Badge key={tag} variant="secondary" className="text-xs">
-                            {tag}
-                          </Badge>
-                        ))}
-                      </div>
-
-                      <div className="mt-4 flex items-center justify-between">
-                        <div>
-                          <span className="text-2xl font-bold text-primary-600">
-                            ¥{service.price?.fixed || service.price?.min || '面议'}
-                          </span>
-                          <span className="text-sm text-gray-500">起</span>
+                        <div className="mt-4 flex flex-wrap gap-1">
+                          {service.tags?.slice(0, 3).map((tag: string) => (
+                            <Badge key={tag} variant="secondary" className="text-xs">
+                              {tag}
+                            </Badge>
+                          ))}
                         </div>
-                        <Link href={`/market/services/${service.id}`}>
-                          <Button size="sm">立即咨询</Button>
-                        </Link>
-                      </div>
-                    </CardContent>
-                  </Card>
+
+                        <div className="mt-4 flex items-center justify-between">
+                          <div>
+                            <span className="text-2xl font-bold text-primary-600">
+                              ¥{service.price?.fixed || service.price?.min || '面议'}
+                            </span>
+                            <span className="text-sm text-gray-500">起</span>
+                          </div>
+                          <Button size="sm" onClick={(e) => e.preventDefault()}>立即咨询</Button>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </Link>
                 ))}
               </div>
             )}
