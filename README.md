@@ -37,64 +37,47 @@
 - Docker & Docker Compose
 - npm ≥ 9
 
-### 1. 克隆并进入项目
+### 快速启动（推荐）
 
 ```bash
-cd opc-platform
+# 1. 一键初始化（安装依赖、启动Docker、迁移数据库、填充数据）
+npm run setup
+
+# 2. 启动后端 API（终端1）
+npm run dev:api
+
+# 3. 启动前端 Web（终端2）
+npm run dev:web
 ```
 
-### 2. 启动基础设施（数据库、缓存）
+### 手动启动
 
 ```bash
+# 1. 启动基础设施（PostgreSQL + Redis）
 npm run docker:up
-```
 
-这将启动：
-- PostgreSQL (端口: 5432)
-- Redis (端口: 6379)
-
-### 3. 安装依赖
-
-```bash
+# 2. 安装依赖
 npm install
+
+# 3. 生成 Prisma Client
+npm run db:generate
+
+# 4. 运行数据库迁移
+npm run db:migrate
+
+# 5. 填充示例数据
+npm run db:seed
+
+# 6. 启动开发服务器（需要两个终端）
+npm run dev:api     # 后端 http://localhost:3009
+npm run dev:web     # 前端 http://localhost:3008
 ```
 
-### 4. 初始化数据库
+### 访问服务
 
-```bash
-# 生成Prisma客户端
-cd apps/api && npx prisma generate
-
-# 执行数据库迁移
-npx prisma migrate dev --name init
-
-# 导入示例数据
-npx prisma db seed
-```
-
-### 5. 启动开发服务器
-
-**方式一：分别启动**
-
-```bash
-# 终端1 - 后端API
-cd apps/api && npm run dev
-
-# 终端2 - 前端Web
-cd apps/web && npm run dev
-```
-
-**方式二：Docker Compose（推荐）**
-
-```bash
-docker-compose up -d
-```
-
-### 6. 访问服务
-
-- **前端**: http://localhost:3000
-- **后端API**: http://localhost:3001
-- **API文档**: http://localhost:3001/api/docs
+- **前端**: http://localhost:3008
+- **后端API**: http://localhost:3009
+- **API文档**: http://localhost:3009/api/docs
 
 ## 项目结构
 
@@ -138,53 +121,67 @@ opc-platform/
 
 ## 核心功能模块
 
-| 模块 | 说明 | API端点 |
-|-----|------|---------|
-| **认证** | 手机号+验证码登录 | `/auth/*` |
-| **用户** | 用户资料管理 | `/users/*` |
-| **政策** | 政策查询、智能匹配 | `/policies/*` |
-| **技能市场** | 服务发布、需求对接 | `/skills/*` |
-| **社区** | 帖子、评论、互动 | `/community/*` |
-| **培训** | 课程、导师 | `/training/*` |
-| **AI Gateway** | API Key管理 | `/ai-gateway/*` |
+| 模块 | 说明 | API端点 | 状态 |
+|-----|------|---------|------|
+| **认证** | 手机号+验证码登录 | `/auth/*` | ✅ 可用 |
+| **用户** | 用户资料管理 | `/users/*` | ✅ 可用 |
+| **政策** | 政策查询、智能匹配、收藏 | `/policies/*` | ✅ 可用 |
+| **技能市场** | 服务发布、需求对接 | `/skills/*` | ✅ 可用 |
+| **社区** | 帖子、评论、点赞 | `/community/*` | ✅ 可用 |
+| **培训** | 课程、导师 | `/training/*` | ✅ 可用 |
+| **交易** | 订单、状态流转、消息 | `/transactions/*` | ✅ 可用 |
+| **AI Gateway** | API Key管理 | `/ai-gateway/*` | ✅ 可用 |
+| **心愿引擎** | 意图识别、批量执行 | `/wishes/*` | ✅ 可用 |
 
 ## 示例数据
 
-项目初始化后包含以下示例数据：
+项目初始化后包含丰富的示例数据：
 
-**政策**:
-- 漕河泾开发区算力补贴（最高30万）
-- 徐汇区模速空间大模型创新生态社区（3年零租金）
+**用户 (5个)**:
+- AI创业者小王、设计师阿琳、全栈老李、创业导师张老师、龙华街道官方
+
+**政策 (6条)**:
+- 模速空间大模型创新社区入驻（最高50万算力补贴）
+- 龙华街道文化创意扶持政策（一次性5000元补贴）
 - 徐汇区小微企业税收优惠
 - 徐汇区创业担保贷款（最高300万）
+- 徐汇区AI人才公寓（租金优惠30%）
+- 龙华街道OPC共享办公空间免费入驻
 
-**课程**:
-- ChatGPT应用开发实战
-- 一人公司商业模式设计
-- AI时代的个人品牌打造
+**技能市场**:
+- 4个服务（品牌VI设计、小程序UI、AI应用开发、官网搭建）
+- 3个需求（AIGC工具、Logo设计、运营合伙人）
+
+**社区**:
+- 4篇帖子（入驻经验、转型分享、AI工具推荐、活动报名）
+- 3条评论
+
+**培训**:
+- 4门课程（ChatGPT开发、商业模式、个人品牌、法律财税）
+- 2位导师
 
 ## API使用示例
 
 ### 政策查询
 ```bash
 # 获取政策列表
-curl http://localhost:3001/api/v1/policies
+curl http://localhost:3009/api/v1/policies
 
 # 智能匹配政策
-curl "http://localhost:3001/api/v1/policies/match?location=龙华&industry=AI"
+curl "http://localhost:3009/api/v1/policies/match?location=龙华&industry=AI"
 ```
 
 ### 用户认证
 ```bash
 # 发送验证码
-curl -X POST http://localhost:3001/api/v1/auth/sms/send \
+curl -X POST http://localhost:3009/api/v1/auth/sms/send \
   -H "Content-Type: application/json" \
-  -d '{"phone":"13800138000"}'
+  -d '{"phone":"13800138001"}'
 
-# 登录
-curl -X POST http://localhost:3001/api/v1/auth/login/phone \
+# 登录（使用seed数据中的测试账号，验证码看后端控制台输出）
+curl -X POST http://localhost:3009/api/v1/auth/login/phone \
   -H "Content-Type: application/json" \
-  -d '{"phone":"13800138000","code":"123456"}'
+  -d '{"phone":"13800138001","code":"控制台输出的验证码"}'
 ```
 
 ## 开发命令
