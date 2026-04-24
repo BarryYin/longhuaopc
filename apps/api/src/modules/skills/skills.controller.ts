@@ -35,6 +35,12 @@ export class SkillsController {
     return this.skillsService.findDemands(query);
   }
 
+  @Get('demands/:id')
+  @ApiOperation({ summary: '获取需求详情' })
+  async findDemandById(@Param('id') id: string) {
+    return this.skillsService.findDemandById(id);
+  }
+
   @Post('demands')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()

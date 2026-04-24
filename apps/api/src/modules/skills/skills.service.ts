@@ -70,6 +70,15 @@ export class SkillsService {
     return { data: demands, pagination: { page: query.page, pageSize: query.pageSize, total } };
   }
 
+  async findDemandById(id: string) {
+    const demand = await this.prisma.demand.findUnique({
+      where: { id },
+      include: { requester: { select: { nickname: true, avatar: true, bio: true, level: true } } },
+    });
+    if (!demand) throw new NotFoundException('需求不存在');
+    return demand;
+  }
+
   async createDemand(requesterId: string, dto: CreateDemandDto) {
     return this.prisma.demand.create({
       data: {

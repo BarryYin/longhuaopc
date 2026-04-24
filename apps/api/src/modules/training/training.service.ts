@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '@/common/prisma/prisma.service';
 import { CourseStatus } from '@prisma/client';
 
@@ -38,5 +38,21 @@ export class TrainingService {
     ]);
 
     return { data: mentors, pagination: { page: query.page, pageSize: query.pageSize, total } };
+  }
+
+  async findCourseById(id: string) {
+    const course = await this.prisma.course.findUnique({
+      where: { id },
+    });
+    if (!course) throw new NotFoundException('课程不存在');
+    return course;
+  }
+
+  async findMentorById(id: string) {
+    const mentor = await this.prisma.mentor.findUnique({
+      where: { id },
+    });
+    if (!mentor) throw new NotFoundException('导师不存在');
+    return mentor;
   }
 }
