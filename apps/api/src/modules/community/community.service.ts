@@ -62,7 +62,7 @@ export class CommunityService {
       data: {
         ...dto,
         authorId,
-        status: PostStatus.PENDING, // 先发后审或先审后发
+        status: PostStatus.PUBLISHED,
       },
     });
   }
