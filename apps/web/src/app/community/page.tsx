@@ -58,10 +58,12 @@ export default function CommunityPage() {
         <div className="flex flex-col lg:flex-row gap-8">
           {/* Sidebar */}
           <div className="lg:w-64">
-            <Button className="w-full gap-2 mb-6" onClick={() => alert('发布功能开发中，敬请期待')}>
-              <Plus className="h-4 w-4" />
-              发布帖子
-            </Button>
+            <Link href="/community/posts/new">
+              <Button className="w-full gap-2 mb-6">
+                <Plus className="h-4 w-4" />
+                发布帖子
+              </Button>
+            </Link>
 
             <Card>
               <CardContent className="p-4">

@@ -72,8 +72,12 @@ export default function MarketPage() {
               <TabsTrigger value="demands">找活干</TabsTrigger>
             </TabsList>
             <div className="flex gap-2">
-              <Button onClick={() => alert('发布功能开发中，敬请期待')}>发布服务</Button>
-              <Button variant="outline" onClick={() => alert('发布功能开发中，敬请期待')}>发布需求</Button>
+              <Link href="/market/services/new">
+                <Button>发布服务</Button>
+              </Link>
+              <Link href="/market/demands/new">
+                <Button variant="outline">发布需求</Button>
+              </Link>
             </div>
           </div>
 

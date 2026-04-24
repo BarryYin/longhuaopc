@@ -42,6 +42,7 @@ export default function LoginPage() {
     onSuccess: (data) => {
       localStorage.setItem('accessToken', data.accessToken)
       localStorage.setItem('refreshToken', data.refreshToken)
+      localStorage.setItem('user', JSON.stringify(data.user))
       router.push('/')
     },
   })
