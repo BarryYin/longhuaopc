@@ -25,8 +25,9 @@ export class AuthService {
       throw new BadRequestException('发送过于频繁，请1小时后再试');
     }
 
-    // 生成6位验证码
-    const code = Math.random().toString().slice(2, 8);
+    // 开发环境使用固定验证码
+    const isDev = this.configService.get('NODE_ENV') !== 'production';
+    const code = isDev ? '123456' : Math.random().toString().slice(2, 8);
 
     // 保存到Redis，5分钟有效
     await this.redisService.set(`sms:code:${phone}`, code, 300);
@@ -36,7 +37,11 @@ export class AuthService {
     await this.redisService.expire(key, 3600);
 
     // TODO: 调用短信服务商发送
-    console.log(`📱 SMS Code for ${phone}: ${code}`);
+    if (isDev) {
+      console.log(`📱 [DEV] SMS Code for ${phone}: ${code} (固定验证码，生产环境将随机生成)`);
+    } else {
+      console.log(`📱 SMS Code for ${phone}: ${code}`);
+    }
   }
 
   // 验证短信码
