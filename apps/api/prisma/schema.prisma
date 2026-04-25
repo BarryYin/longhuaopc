@@ -60,6 +60,7 @@ model User {
   apiKeys   ApiKey[]
   favorites UserFavorite[]
   wishes    Wish[]
+  agents    Agent[]
 
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
@@ -572,4 +573,70 @@ model WishExecution {
 
   @@index([wishId])
   @@map("wish_executions")
+}
+
+// ==================== Agent 系统 ====================
+
+model Agent {
+  id           String   @id @default(uuid())
+  agentId      String   @unique @map("agent_id")
+  agentSecret  String   @map("agent_secret")
+  userId       String   @map("user_id")
+  name         String
+  description  String?
+  isActive     Boolean  @default(true) @map("is_active")
+  lastUsedAt   DateTime? @map("last_used_at")
+  permissions  Json?    // Agent 权限配置
+  config       Json?    // Agent 配置
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  user  User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tasks AgentTask[]
+  chats AgentChat[]
+
+  @@index([userId])
+  @@index([agentId])
+  @@map("agents")
+}
+
+model AgentTask {
+  id          String   @id @default(uuid())
+  agentId     String   @map("agent_id")
+  userId      String   @map("user_id")
+  taskType    String   @map("task_type")
+  params      String   @db.Text
+  description String?
+  status      String   @default("PENDING") // PENDING, RUNNING, COMPLETED, FAILED
+  result      String?  @db.Text
+  error       String?  @db.Text
+  startedAt   DateTime? @map("started_at")
+  completedAt DateTime? @map("completed_at")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  agent Agent @relation(fields: [agentId], references: [id], onDelete: Cascade)
+
+  @@index([agentId])
+  @@index([userId])
+  @@index([status])
+  @@map("agent_tasks")
+}
+
+model AgentChat {
+  id        String   @id @default(uuid())
+  agentId   String   @map("agent_id")
+  userId    String   @map("user_id")
+  sessionId String   @map("session_id")
+  role      String   // user, assistant
+  message   String   @db.Text
+  metadata  Json?
+  createdAt DateTime @default(now()) @map("created_at")
+
+  agent Agent @relation(fields: [agentId], references: [id], onDelete: Cascade)
+
+  @@index([agentId])
+  @@index([userId])
+  @@index([sessionId])
+  @@map("agent_chats")
 }

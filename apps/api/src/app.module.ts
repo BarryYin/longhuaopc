@@ -9,6 +9,7 @@ import { TrainingModule } from './modules/training/training.module';
 import { AiGatewayModule } from './modules/ai-gateway/ai-gateway.module';
 import { TransactionsModule } from './modules/transactions/transactions.module';
 import { WishesModule } from './modules/wishes/wishes.module';
+import { AgentModule } from './modules/agent/agent.module';
 import { PrismaModule } from './common/prisma/prisma.module';
 import { RedisModule } from './common/redis/redis.module';
 
@@ -29,6 +30,7 @@ import { RedisModule } from './common/redis/redis.module';
     TransactionsModule,
     AiGatewayModule,
     WishesModule,
+    AgentModule,
   ],
 })
 export class AppModule {}
