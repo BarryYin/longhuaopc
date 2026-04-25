@@ -13,55 +13,45 @@ import { api } from '@/lib/api'
 export default function RegisterPage() {
   const router = useRouter()
   const [phone, setPhone] = useState('')
-  const [code, setCode] = useState('')
+  const [password, setPassword] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
   const [nickname, setNickname] = useState('')
-  const [countdown, setCountdown] = useState(0)
-
-  const sendCodeMutation = useMutation({
-    mutationFn: async (phone: string) => {
-      await api.post('/auth/sms/send', { phone })
-    },
-    onSuccess: () => {
-      setCountdown(60)
-      const timer = setInterval(() => {
-        setCountdown((prev) => {
-          if (prev <= 1) {
-            clearInterval(timer)
-            return 0
-          }
-          return prev - 1
-        })
-      }, 1000)
-    },
-  })
 
   const registerMutation = useMutation({
-    mutationFn: async (data: { phone: string; code: string }) => {
-      const res = await api.post('/auth/login/phone', data)
+    mutationFn: async (data: { phone: string; password: string; nickname?: string }) => {
+      const res = await api.post('/auth/register', data)
       return res.data
     },
     onSuccess: (data) => {
       localStorage.setItem('accessToken', data.accessToken)
       localStorage.setItem('refreshToken', data.refreshToken)
+      localStorage.setItem('user', JSON.stringify(data.user))
       router.push('/')
+    },
+    onError: (error: any) => {
+      alert(error.response?.data?.message || '注册失败')
     },
   })
 
-  const handleSendCode = () => {
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!phone || !password || !confirmPassword) {
+      alert('请填写完整信息')
+      return
+    }
     if (!phone.match(/^1[3-9]\d{9}$/)) {
       alert('请输入正确的手机号')
       return
     }
-    sendCodeMutation.mutate(phone)
-  }
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!phone || !code) {
-      alert('请填写完整信息')
+    if (password.length < 6 || password.length > 20) {
+      alert('密码长度必须在6-20位之间')
       return
     }
-    registerMutation.mutate({ phone, code })
+    if (password !== confirmPassword) {
+      alert('两次输入的密码不一致')
+      return
+    }
+    registerMutation.mutate({ phone, password, nickname: nickname || undefined })
   }
 
   return (
@@ -85,25 +75,23 @@ export default function RegisterPage() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700">验证码</label>
-              <div className="flex gap-2">
-                <Input
-                  type="text"
-                  placeholder="请输入验证码"
-                  value={code}
-                  onChange={(e) => setCode(e.target.value)}
-                  maxLength={6}
-                  className="flex-1"
-                />
-                <Button
-                  type="button"
-                  variant="outline"
-                  disabled={countdown > 0 || sendCodeMutation.isPending}
-                  onClick={handleSendCode}
-                >
-                  {countdown > 0 ? `${countdown}s` : '获取验证码'}
-                </Button>
-              </div>
+              <label className="block text-sm font-medium text-gray-700">密码</label>
+              <Input
+                type="password"
+                placeholder="请输入密码（6-20位）"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700">确认密码</label>
+              <Input
+                type="password"
+                placeholder="请再次输入密码"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+              />
             </div>
 
             <div>

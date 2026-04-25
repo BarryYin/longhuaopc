@@ -1,13 +1,27 @@
 import { Controller, Post, Body, HttpCode, HttpStatus } from '@nestjs/common';
 import { ApiTags, ApiOperation } from '@nestjs/swagger';
 import { AuthService } from './auth.service';
-import { SendSmsDto, LoginWithPhoneDto, RefreshTokenDto } from './dto';
+import { SendSmsDto, LoginWithPhoneDto, RefreshTokenDto, RegisterDto, LoginWithPasswordDto } from './dto';
 
 @ApiTags('认证')
 @Controller('auth')
 export class AuthController {
   constructor(private authService: AuthService) {}
 
+  // ========== 账号密码认证 ==========
+  @Post('register')
+  @ApiOperation({ summary: '账号密码注册' })
+  async register(@Body() dto: RegisterDto) {
+    return this.authService.register(dto);
+  }
+
+  @Post('login')
+  @ApiOperation({ summary: '账号密码登录' })
+  async loginWithPassword(@Body() dto: LoginWithPasswordDto) {
+    return this.authService.loginWithPassword(dto.account, dto.password);
+  }
+
+  // ========== 手机验证码认证（保留） ==========
   @Post('sms/send')
   @ApiOperation({ summary: '发送短信验证码' })
   @HttpCode(HttpStatus.OK)

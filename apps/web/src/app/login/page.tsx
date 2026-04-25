@@ -12,31 +12,12 @@ import { api } from '@/lib/api'
 
 export default function LoginPage() {
   const router = useRouter()
-  const [phone, setPhone] = useState('')
-  const [code, setCode] = useState('')
-  const [countdown, setCountdown] = useState(0)
-
-  const sendCodeMutation = useMutation({
-    mutationFn: async (phone: string) => {
-      await api.post('/auth/sms/send', { phone })
-    },
-    onSuccess: () => {
-      setCountdown(60)
-      const timer = setInterval(() => {
-        setCountdown((prev) => {
-          if (prev <= 1) {
-            clearInterval(timer)
-            return 0
-          }
-          return prev - 1
-        })
-      }, 1000)
-    },
-  })
+  const [account, setAccount] = useState('')
+  const [password, setPassword] = useState('')
 
   const loginMutation = useMutation({
-    mutationFn: async (data: { phone: string; code: string }) => {
-      const res = await api.post('/auth/login/phone', data)
+    mutationFn: async (data: { account: string; password: string }) => {
+      const res = await api.post('/auth/login', data)
       return res.data
     },
     onSuccess: (data) => {
@@ -45,23 +26,18 @@ export default function LoginPage() {
       localStorage.setItem('user', JSON.stringify(data.user))
       router.push('/')
     },
+    onError: (error: any) => {
+      alert(error.response?.data?.message || '登录失败')
+    },
   })
-
-  const handleSendCode = () => {
-    if (!phone.match(/^1[3-9]\d{9}$/)) {
-      alert('请输入正确的手机号')
-      return
-    }
-    sendCodeMutation.mutate(phone)
-  }
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    if (!phone || !code) {
+    if (!account || !password) {
       alert('请填写完整信息')
       return
     }
-    loginMutation.mutate({ phone, code })
+    loginMutation.mutate({ account, password })
   }
 
   return (
@@ -74,36 +50,24 @@ export default function LoginPage() {
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700">手机号</label>
+              <label className="block text-sm font-medium text-gray-700">账号（手机号）</label>
               <Input
                 type="tel"
                 placeholder="请输入手机号"
-                value={phone}
-                onChange={(e) => setPhone(e.target.value)}
+                value={account}
+                onChange={(e) => setAccount(e.target.value)}
                 maxLength={11}
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700">验证码</label>
-              <div className="flex gap-2">
-                <Input
-                  type="text"
-                  placeholder="请输入验证码"
-                  value={code}
-                  onChange={(e) => setCode(e.target.value)}
-                  maxLength={6}
-                  className="flex-1"
-                />
-                <Button
-                  type="button"
-                  variant="outline"
-                  disabled={countdown > 0 || sendCodeMutation.isPending}
-                  onClick={handleSendCode}
-                >
-                  {countdown > 0 ? `${countdown}s` : '获取验证码'}
-                </Button>
-              </div>
+              <label className="block text-sm font-medium text-gray-700">密码</label>
+              <Input
+                type="password"
+                placeholder="请输入密码"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+              />
             </div>
 
             <Button
@@ -114,7 +78,7 @@ export default function LoginPage() {
               {loginMutation.isPending ? (
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
               ) : null}
-              登录 / 注册
+              登录
             </Button>
           </form>
 

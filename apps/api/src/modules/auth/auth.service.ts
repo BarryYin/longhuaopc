@@ -5,6 +5,7 @@ import * as bcrypt from 'bcrypt';
 import { PrismaService } from '@/common/prisma/prisma.service';
 import { RedisService } from '@/common/redis/redis.service';
 import { UsersService } from '../users/users.service';
+import { RegisterDto } from './dto';
 
 @Injectable()
 export class AuthService {
@@ -16,6 +17,73 @@ export class AuthService {
     private usersService: UsersService,
   ) {}
 
+  // ========== 账号密码注册 ==========
+  async register(dto: RegisterDto) {
+    const { phone, password, nickname } = dto;
+
+    // 检查手机号是否已注册
+    const existingUser = await this.prisma.user.findUnique({
+      where: { phone },
+    });
+
+    if (existingUser) {
+      throw new BadRequestException('该手机号已被注册');
+    }
+
+    // 加密密码
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    // 创建用户
+    const user = await this.prisma.user.create({
+      data: {
+        phone,
+        password: hashedPassword,
+        phoneVerified: true,
+        nickname: nickname || `用户${phone.slice(-4)}`,
+      },
+    });
+
+    const tokens = await this.generateTokens(user.id);
+    return {
+      user: this.usersService.sanitizeUser(user),
+      ...tokens,
+    };
+  }
+
+  // ========== 账号密码登录 ==========
+  async loginWithPassword(account: string, password: string) {
+    // 查找用户（支持手机号登录）
+    const user = await this.prisma.user.findUnique({
+      where: { phone: account },
+    });
+
+    if (!user) {
+      throw new UnauthorizedException('账号或密码错误');
+    }
+
+    // 验证密码
+    if (!user.password) {
+      throw new UnauthorizedException('该账号未设置密码，请使用短信验证码登录');
+    }
+
+    const isPasswordValid = await bcrypt.compare(password, user.password);
+    if (!isPasswordValid) {
+      throw new UnauthorizedException('账号或密码错误');
+    }
+
+    // 检查用户状态
+    if (user.status !== 'ACTIVE') {
+      throw new UnauthorizedException('用户已被禁用');
+    }
+
+    const tokens = await this.generateTokens(user.id);
+    return {
+      user: this.usersService.sanitizeUser(user),
+      ...tokens,
+    };
+  }
+
+  // ========== 短信验证码（保留） ==========
   // 发送短信验证码
   async sendSmsCode(phone: string): Promise<void> {
     // 检查是否频繁发送
@@ -86,6 +154,7 @@ export class AuthService {
     };
   }
 
+  // ========== Token 管理 ==========
   // 生成Token
   private async generateTokens(userId: string) {
     const [accessToken, refreshToken] = await Promise.all([
