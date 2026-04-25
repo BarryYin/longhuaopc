@@ -64,23 +64,45 @@ export async function fetchZhubajieServices(): Promise<FetcherResult<RawService>
  * 降级模拟数据（保持接口一致，仅用于调试或限流时）
  */
 function getMockServices(): RawService[] {
-  const categories = ['设计', '开发', '咨询', '文案', '翻译', '营销'];
-  const providerNames = ['创意设计工作室', '代码开发工作室', '商业咨询团队', '文案创作组', '翻译服务中心', '营销推广团队'];
-  return Array.from({ length: 50 }, (_, i) => {
-    const cat = categories[i % categories.length];
-    const provider = providerNames[i % providerNames.length];
+  // 扩展类别：加入自媒体/视频类，价格控制在 1000 元内
+  const categoryConfig = [
+    // 传统类
+    { cat: '设计', provider: '创意设计工作室', priceBase: 800 },
+    { cat: '开发', provider: '代码开发工作室', priceBase: 900 },
+    { cat: '咨询', provider: '商业咨询团队', priceBase: 700 },
+    { cat: '文案', provider: '文案创作组', priceBase: 500 },
+    { cat: '翻译', provider: '翻译服务中心', priceBase: 600 },
+    { cat: '营销', provider: '营销推广团队', priceBase: 700 },
+
+    // 新增自媒体/视频类
+    { cat: '视频剪辑', provider: '视频工作室A', priceBase: 350 },
+    { cat: '短视频制作', provider: '短视频团队B', priceBase: 300 },
+    { cat: '自媒体代运营', provider: '自媒体孵化器C', priceBase: 500 },
+    { cat: 'AI漫画创作', provider: 'AI漫画工坊D', priceBase: 550 },
+    { cat: '内容创作', provider: '内容创作社E', priceBase: 450 },
+    { cat: 'IP打造', provider: 'IP孵化中心F', priceBase: 750 },
+    { cat: '脚本写作', provider: '剧本创作屋G', priceBase: 400 },
+    { cat: '拍摄指导', provider: '摄影指导组H', priceBase: 600 },
+    { cat: '账号定位', provider: '定位咨询I', priceBase: 400 },
+    { cat: 'AI视频生成', provider: 'AI视频工坊J', priceBase: 800 },
+  ];
+
+  return Array.from({ length: 60 }, (_, i) => {
+    const cfg = categoryConfig[i % categoryConfig.length];
+    // 价格 = priceBase ± 随机浮动，保证 ≤ 1000
+    const price = Math.min(1000, Math.max(50, cfg.priceBase + Math.floor(Math.random() * 300) - 150));
     return {
       url: `https://www.zbj.com/service/${i + 1}.html`,
-      title: `专业${cat}服务 - 企业定制需求`,
+      title: `专业${cfg.cat}服务 - 企业定制需求`,
       description: '提供高质量专业解决方案，支持定制，售后无忧。',
-      category: cat,
-      price: Math.floor(Math.random() * 10000) + 500,
-      priceRange: `500-10000元`,
+      category: cfg.cat,
+      price,
+      priceRange: `${price}元`,
       priceUnit: '元',
       location: ['北京', '上海', '深圳', '杭州'][i % 4],
-      tags: [cat, '企业服务', '靠谱'],
+      tags: [cfg.cat, '企业服务', '靠谱'],
       images: [],
-      providerName: provider,  // 独立服务商名称
+      providerName: cfg.provider,
     };
   });
 }

@@ -1,4 +1,5 @@
 {
+  "extends": "@nestjs/cli/tsconfig.json",
   "compilerOptions": {
     "module": "commonjs",
     "declaration": true,
@@ -20,5 +21,7 @@
     "paths": {
       "@/*": ["src/*"]
     }
-  }
+  },
+  "include": ["src"],
+  "exclude": ["node_modules", "dist", "prisma/ingestion", "prisma/seed.ts", "prisma/demo", "prisma/debug", "prisma/cleaners"]
 }

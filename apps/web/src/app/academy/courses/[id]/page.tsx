@@ -105,10 +105,24 @@ export default function CourseDetailPage() {
             <div className="mt-8 flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-500">价格</p>
-                <p className="text-3xl font-bold text-primary-600">¥{course.price}</p>
+                {course.isFree ? (
+                  <p className="text-3xl font-bold text-red-600">限时免费</p>
+                ) : (
+                  <>
+                    {course.originalPrice && (
+                      <p className="text-sm text-gray-400 line-through">¥{course.originalPrice}</p>
+                    )}
+                    <p className="text-3xl font-bold text-primary-600">¥{course.price}</p>
+                    {course.discountTag && course.promoEndDate && (
+                      <p className="text-sm text-red-600">
+                        {course.discountTag} · 截止至 {new Date(course.promoEndDate).toLocaleDateString()}
+                      </p>
+                    )}
+                  </>
+                )}
               </div>
               <Button size="lg" onClick={() => alert('报名功能开发中')}>
-                立即报名
+                {course.isFree ? '免费领取' : '立即报名'}
               </Button>
             </div>
           </CardContent>

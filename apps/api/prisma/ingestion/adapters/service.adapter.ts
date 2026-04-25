@@ -8,6 +8,10 @@ const ServiceCategory = {
   MARKETING: 'MARKETING',
   TRANSLATION: 'TRANSLATION',
   OTHER: 'OTHER',
+  VIDEO_PRODUCTION: 'VIDEO_PRODUCTION',
+  AI_COMIC: 'AI_COMIC',
+  CONTENT_CREATION: 'CONTENT_CREATION',
+  SOCIAL_MEDIA: 'SOCIAL_MEDIA',
 };
 
 function mapCategory(cat: string): string {
@@ -18,10 +22,34 @@ function mapCategory(cat: string): string {
     '文案': 'COPYWRITING',
     '翻译': 'TRANSLATION',
     '营销': 'MARKETING',
+
+    // 自媒体/视频类
+    '视频': 'VIDEO_PRODUCTION',
+    '剪辑': 'VIDEO_PRODUCTION',
+    '拍摄': 'VIDEO_PRODUCTION',
+    '自媒体': 'SOCIAL_MEDIA',
+    '内容创作': 'CONTENT_CREATION',
+    'AI漫画': 'AI_COMIC',
+    '漫剧': 'AI_COMIC',
+    '短视频': 'SOCIAL_MEDIA',
+    'IP打造': 'CONTENT_CREATION',
+    '脚本': 'CONTENT_CREATION',
+    '运营': 'SOCIAL_MEDIA',
+
     'other': 'OTHER',
   };
-  const normalized = cat?.toUpperCase?.() || 'OTHER';
-  return map[normalized] || ServiceCategory.OTHER;
+
+  if (!cat) return ServiceCategory.OTHER;
+
+  // 完整匹配优先
+  if (map[cat]) return map[cat];
+
+  // 子串匹配（如 "视频剪辑" 包含 "视频"）
+  for (const [key, value] of Object.entries(map)) {
+    if (cat.includes(key)) return value;
+  }
+
+  return ServiceCategory.OTHER;
 }
 
 /**

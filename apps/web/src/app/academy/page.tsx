@@ -109,10 +109,30 @@ export default function AcademyPage() {
                         </div>
 
                         <div className="mt-4 flex items-center justify-between">
-                          <span className="text-2xl font-bold text-primary-600">
-                            ¥{course.price}
-                          </span>
-                          <Button onClick={(e) => e.preventDefault()}>立即报名</Button>
+                          <div>
+                            {course.isFree ? (
+                              <span className="text-2xl font-bold text-red-600">限时免费</span>
+                            ) : (
+                              <>
+                                {course.originalPrice && (
+                                  <span className="text-sm text-gray-400 line-through mr-2">
+                                    ¥{course.originalPrice}
+                                  </span>
+                                )}
+                                <span className="text-2xl font-bold text-primary-600">
+                                  ¥{course.price}
+                                </span>
+                                {course.discountTag && (
+                                  <span className="ml-2 text-xs bg-red-100 text-red-600 px-2 py-1 rounded">
+                                    {course.discountTag}
+                                  </span>
+                                )}
+                              </>
+                            )}
+                          </div>
+                          <Button onClick={(e) => e.preventDefault()}>
+                            {course.isFree ? '立即领取' : '立即报名'}
+                          </Button>
                         </div>
                       </CardContent>
                     </Card>

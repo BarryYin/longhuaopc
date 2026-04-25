@@ -200,7 +200,10 @@ model Service {
   title       String
   category    ServiceCategory
   description String   @db.Text
-  price       Json     // { type, min, max, fixed, currency }
+  price       Float?   // 固定价格（如 500 元）
+  priceMin    Float?   // 价格区间下限
+  priceMax    Float?   // 价格区间上限
+  priceUnit   String?  @default("元")
   tags        String[]
   deliveryTime String  @map("delivery_time")
   portfolio   String[] @default([])
@@ -219,7 +222,12 @@ model Service {
   createdAt   DateTime @default(now()) @map("created_at")
   updatedAt   DateTime @updatedAt @map("updated_at")
 
-  @@map("services")
+    // 外部数据源标识
+  externalSourceUrl String?  @map("external_source_url")
+  externalHash      String?  @unique @map("external_hash")
+  source            String   @default("user") // 'user' | 'ingestion'
+
+@@map("services")
 }
 
 enum ServiceCategory {
@@ -230,6 +238,10 @@ enum ServiceCategory {
   MARKETING
   TRANSLATION
   OTHER
+  VIDEO_PRODUCTION    // 视频制作/剪辑服务
+  AI_COMIC            // AI 漫剧定制
+  CONTENT_CREATION    // 内容创作
+  SOCIAL_MEDIA        // 自媒体代运营
 }
 
 enum ServiceStatus {
@@ -406,8 +418,12 @@ model Course {
   instructorAvatar String? @map("instructor_avatar")
 
   // 课程信息
-  duration    String?
-  price       Float?
+  duration       String?
+  price          Float?    // 当前显示价格（折后价或固定价）
+  originalPrice  Float?    @map("original_price") // 原价（用于对比展示）
+  isFree         Boolean   @default(false)       // 是否限时免费
+  promoEndDate   DateTime? @map("promo_end_date") // 促销结束时间
+  discountTag    String?   @map("discount_tag")   // 折扣标签（如"限时5折"）
 
   // 统计
   studentCount Int @default(0) @map("student_count")
@@ -419,7 +435,13 @@ model Course {
   createdAt   DateTime @default(now()) @map("created_at")
   updatedAt   DateTime @updatedAt @map("updated_at")
 
-  @@map("courses")
+    // 外部数据源
+  externalSourceUrl String?  @map("external_source_url")
+  externalHash      String?  @unique @map("external_hash")
+  source            String   @default("user")
+  isReadonly        Boolean  @default(false)
+
+@@map("courses")
 }
 
 enum CourseCategory {
@@ -429,6 +451,10 @@ enum CourseCategory {
   LEGAL_FINANCE
   MARKETING
   OTHER
+  VIDEO_PRODUCTION    // 视频制作/剪辑
+  AI_COMIC            // AI 漫剧创作
+  CONTENT_CREATION    // 内容创作/自媒体
+  SOCIAL_MEDIA        // 社交媒体运营
 }
 
 enum CourseStatus {
@@ -459,7 +485,11 @@ model Mentor {
   createdAt   DateTime @default(now()) @map("created_at")
   updatedAt   DateTime @updatedAt @map("updated_at")
 
-  @@map("mentors")
+    // 外部数据源
+  externalHash String?  @unique @map("external_hash")
+  source       String   @default("user")
+
+@@map("mentors")
 }
 
 enum MentorStatus {

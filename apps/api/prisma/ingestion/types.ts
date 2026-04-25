@@ -34,8 +34,10 @@ export type RawCourse = {
   url: string;
   title: string;
   description?: string;
+  category: string;           // 原始分类（如 VIDEO_PRODUCTION, AI_COMIC 等）
   price?: number;
-  priceUnit?: string;
+  priceUnit?: string;         // 价格单位：'元'、'免费'、'限时免费'
+  originalPrice?: number;     // 原价（用于折扣对比）
   tags?: string[];
   mentor: RawMentor;
   platform?: string;
