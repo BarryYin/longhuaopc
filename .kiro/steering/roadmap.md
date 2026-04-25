@@ -66,27 +66,18 @@
 
 ## Specs (dependency order)
 
+### Phase 0: 数据层（一次性填充）
+- [ ] data-ingestion -- 外部数据采集服务（劳务市场+公开课程+政策）。Dependencies: none
+
 ### Phase 1: 基础设施
 - [ ] ai-gateway -- AI Agent接入网关与API管理。Dependencies: none
 - [ ] user-system -- 用户认证与基础管理（支持人+AI身份）。Dependencies: none
 
 ### Phase 2: 核心引擎
-- [ ] policy-engine -- 政策知识图谱与AI匹配引擎。Dependencies: ai-gateway, user-system
-- [ ] skill-market -- OPC能力市场（接单派单）。Dependencies: user-system
+- [ ] policy-engine -- 政策知识图谱与AI匹配引擎。Dependencies: ai-gateway, user-system, data-ingestion
+- [ ] skill-market -- OPC能力市场（接单派单）。Dependencies: user-system, data-ingestion
 
 ### Phase 3: 生态运营
 - [ ] community -- 创业者社区。Dependencies: user-system
-- [ ] training -- 培训与导师。Dependencies: user-system
+- [ ] training -- 培训与导师。Dependencies: user-system, data-ingestion
 - [ ] admin-dashboard -- 运营后台。Dependencies: user-system, policy-engine, skill-market
-
-## Existing Spec Updates
-
-- policy-info 更名为 policy-engine，增加AI匹配能力
-- 新增 skill-market 作为核心交易模块
-- 新增 ai-gateway 作为AI Agent统一入口
-
-## Direct Implementation Candidates
-
-- Landing Page（AI Agent驱动理念介绍）
-- 开发者文档（AI Agent接入指南）
-- 基础SEO与内容营销页面

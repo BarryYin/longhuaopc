@@ -10,34 +10,40 @@ export class TrainingService {
     const where: any = { status: CourseStatus.PUBLISHED };
     if (query.category) where.category = query.category;
 
+    const page = Number(query.page) || 1;
+    const pageSize = Number(query.pageSize) || 10;
+
     const [courses, total] = await Promise.all([
       this.prisma.course.findMany({
         where,
         orderBy: { createdAt: 'desc' },
-        skip: (query.page - 1) * query.pageSize,
-        take: query.pageSize,
+        skip: (page - 1) * pageSize,
+        take: pageSize,
       }),
       this.prisma.course.count({ where }),
     ]);
 
-    return { data: courses, pagination: { page: query.page, pageSize: query.pageSize, total } };
+    return { data: courses, pagination: { page, pageSize, total } };
   }
 
   async findMentors(query: any) {
     const where: any = { status: 'APPROVED' };
     if (query.expertise) where.expertise = { has: query.expertise };
 
+    const page = Number(query.page) || 1;
+    const pageSize = Number(query.pageSize) || 10;
+
     const [mentors, total] = await Promise.all([
       this.prisma.mentor.findMany({
         where,
         orderBy: { rating: 'desc' },
-        skip: (query.page - 1) * query.pageSize,
-        take: query.pageSize,
+        skip: (page - 1) * pageSize,
+        take: pageSize,
       }),
       this.prisma.mentor.count({ where }),
     ]);
 
-    return { data: mentors, pagination: { page: query.page, pageSize: query.pageSize, total } };
+    return { data: mentors, pagination: { page, pageSize, total } };
   }
 
   async findCourseById(id: string) {
